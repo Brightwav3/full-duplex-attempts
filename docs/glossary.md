@@ -24,9 +24,26 @@ switch.
 results carrying a superseded id are discarded rather than delivered. See *turn
 id*.
 
+**Backchannel** — "mhm", "yeah", "got it" produced *while the other party is
+still speaking*, signalling attention without claiming the floor. The practical
+test for a full-duplex model: a turn-based one cannot do it, because emitting
+anything means the turn changed hands.
+
+**Delegation** — the voice model handing deeper work (search, reasoning, a tool
+call) to a separate, stronger model, and continuing to converse while it runs.
+The source of most of a voice assistant's measurable capability; see
+[lesson 7](lessons.md).
+
 **Native speech-to-speech** — one model consuming streaming audio and emitting
-streaming audio (Gemini Live, GPT Realtime, Moshi). No intermediate text, no
-externally imposed turn boundary.
+streaming audio, with no intermediate text. Necessary for full-duplex and not
+sufficient: Gemini Live and ChatGPT Advanced Voice Mode are native and still
+turn-based. See *generation*.
+
+**Generation (1 / 2 / 3)** — the shorthand this repository uses for the three
+architectures: cascade, turn-based native, full-duplex. Defined in
+[criterion 4](what-full-duplex-requires.md). The distinction matters because
+generation 2 is routinely described as full-duplex, and scoring it that way makes
+an unreachable ceiling look like an unfinished integration.
 
 **NLMS (Normalised Least Mean Squares)** — an adaptive filter, the standard
 workhorse for software AEC. Learns the room's echo path continuously.

@@ -40,18 +40,29 @@ Keep the residual, not the verdict.
 
 *From: [voxtral-live](attempts/voxtral-live.md), finding 4.*
 
-## 4. Cascade versus native speech-to-speech is the only decision that sets the ceiling
+## 4. The model's generation sets the ceiling, and you do not set the generation
 
 Everything else is execution. voxtral-live executed the application layer better
 than Assistant mark I and is still structurally further from full-duplex, because
 a cascade needs a complete utterance and therefore needs a turn detector.
 
-Corollary: if you are on a cascade, stop trying to make it duplex and start
-making the detector's mistakes cheap. Speculative generation on a stable partial,
-cancelled when more speech arrives, buys back the silence timeout for the price
-of some wasted tokens.
+But the sharper version of this lesson took longer to arrive, because both
+attempts assumed the choice was cascade versus native. It is not — it is
+[three generations](what-full-duplex-requires.md), and *native speech-to-speech
+is only the second*. Gemini Live is native and still ends the turn on silence.
+Moving from generation 1 to 2 is a real gain and does not reach duplex; the last
+step is a property of model weights, not of architecture.
 
-*From: both attempts.*
+Two corollaries, one per generation you might be stuck on:
+
+- **On a cascade:** stop trying to make it duplex. Make the detector's mistakes
+  cheap instead — speculative generation on a stable partial, cancelled when more
+  speech arrives, buys back the silence timeout for some wasted tokens.
+- **On generation 2:** the remaining gap is not yours to close. Spend the effort
+  on being able to absorb generation 3 without a rewrite, and on the walls that
+  *are* internal. See [The model problem](the-model-problem.md).
+
+*From: both attempts, and a correction to this page dated 2026-08-13.*
 
 ## 5. Cancellation needs a monotonic id, and it is cheap to add early
 
@@ -79,7 +90,30 @@ The testability argument is collected on day one.
 
 *From: [Assistant mark I](attempts/assistant-mark-i.md).*
 
-## 7. Split the problem the same way twice and you get two halves, not two systems
+## 7. The capability of a voice assistant comes from delegation, not from the voice model
+
+A full-duplex model has to run inference every frame, so it has to be small, so
+it is not very smart. The large labs did not fix this by making it smarter. They
+gave it a phone.
+
+OpenAI published the numbers, and the gap is not subtle. On BrowseComp — agentic
+web search — Advanced Voice Mode scores **0.7 %** and GPT‑Live‑1 with high
+reasoning effort scores **75.2 %**. GPT‑Live‑1 is a small, fast conversational
+model. The 75 points are not in it; they are in what it is allowed to call.
+
+Two consequences for anyone building this:
+
+- The application half is not the boring half. It is where measurable capability
+  lives, and it is the half you can build without waiting for anyone's weights.
+- A generation-3 model obtained without a delegation path underneath is a
+  pleasant conversationalist that cannot do anything. That is a worse assistant
+  than a generation-2 model that can.
+
+*From: OpenAI's published GPT‑Live evaluations, read 2026-08-13. Cross-check
+against [voxtral-live](attempts/voxtral-live.md), which built the delegation half
+and is structurally further from full-duplex — and still more useful for it.*
+
+## 8. Split the problem the same way twice and you get two halves, not two systems
 
 The clearest thing to come out of reading both repositories on the same day: they
 are complementary halves of one architecture. Assistant mark I has the media half

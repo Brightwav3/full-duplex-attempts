@@ -40,12 +40,20 @@ cover the session lifecycle without touching a network.
 | Criterion | Status |
 |---|---|
 | 1. Simultaneous I/O | **Yes, structurally.** The Gemini Live session is inherently bidirectional. |
-| 2. Echo cancellation | **None, and nowhere to put it.** See below. |
-| 3. No blocking turn detector | **Yes.** Turn detection is the provider's problem, not a timer in this codebase. |
-| 4. Native speech-to-speech | **Yes.** This is the attempt's real achievement. |
+| 2. Echo cancellation | **None, and nowhere to put it.** See wall 2. |
+| 3. No blocking turn detector | **No — outsourced, not removed.** See wall 3. |
+| 4. Full-duplex model | **No. Generation 2.** Gemini Live is native speech-to-speech and still turn-based. |
 | 5. Interruptibility | **Partial.** `interrupt()` and `output.interrupted` exist on the contract; there is no delegated work to cancel, because there is no delegation. |
 
-## The two walls
+> **Correction, 2026-08-13.** An earlier version of this page scored criteria 3
+> and 4 as passes, on the reasoning that turn detection is the provider's problem
+> and that Gemini Live is a native speech-to-speech model. The second half is
+> true and the conclusion does not follow: native speech-to-speech is
+> [generation 2](../what-full-duplex-requires.md), and generation 2 still ends
+> the turn on silence — server-side, but no less imposed. The attempt's real
+> achievement is the contract, not the duplexity.
+
+## The three walls
 
 ### Wall 1 — tools are unreachable from the path that runs on hardware
 
@@ -84,13 +92,34 @@ of conversational flow", which is vague enough to justify anything, but a
 concrete signal-processing requirement that the current decomposition makes
 unimplementable.
 
+### Wall 3 — the ceiling is the model, and the model is generation 2
+
+The frustration this attempt produced was that it did not feel like GPT‑Live,
+despite the architecture being right. The cause is not in the repository. Gemini
+Live is a turn-based native model: it waits for the user to stop before it
+starts, and it cannot backchannel, because emitting anything means the turn
+changed hands. No contract, no state model, and no amount of application work
+closes that gap. It is closed by a different model or not at all.
+
+This is the wall worth naming most precisely, because it is the one that looks
+like a personal failure and is not. See
+[The model problem](../the-model-problem.md) for what is obtainable, at what
+price, and why it is still thin.
+
+The corollary is unflattering in a different way. Because the ceiling is
+external, the walls that *are* internal — no tool path, nowhere for AEC — are the
+whole of what this attempt controls, and both remain open.
+
 ## What this attempt proves
 
 That the hard half — a native speech-to-speech session behind a
 provider-independent contract, with a fake that makes it testable — is buildable
-and was built. What it did not prove is that a duplex conversation is useful
-without the ability to act, or that module independence survives contact with
-acoustics.
+and was built. It is generation-2 infrastructure built well enough that
+generation 3 should drop into it as a provider rather than a rewrite; whether
+that is true is untested, and stays untested until a second provider ships.
+
+What it did not prove is that a duplex conversation is useful without the ability
+to act, or that module independence survives contact with acoustics.
 
 The pattern for the missing half does not need inventing. See
 [voxtral-live](voxtral-live.md), whose `delegation.mjs` and `cancellation.mjs`

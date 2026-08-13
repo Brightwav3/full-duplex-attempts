@@ -58,18 +58,42 @@ needs a complete utterance to respond to. It can only make the detector's
 mistakes cheap: start generating on a stable partial, cancel when more speech
 arrives. Wasted tokens buy back the wait.
 
-Removing the detector entirely requires a model that consumes audio continuously
-and decides for itself when to speak — which means criterion 4.
+Note that this criterion asks whether a turn boundary is imposed **anywhere**,
+not whether the timer is in your source tree. A provider that ends the turn on
+silence server-side has the same failure mode; it has only moved out of view. So
+this criterion is not passed by delegating it — it is passed only by criterion 4
+being generation 3.
 
-### 4. A model that accepts streaming audio and emits streaming audio
+### 4. A model that is itself full-duplex
 
-Native speech-to-speech (Gemini Live, GPT Realtime, Moshi) versus a cascade. The
-cascade is easier to build, easier to swap parts of, and easier to debug — and it
-has a floor on latency and an intrinsic notion of a turn that no amount of
-application-layer work removes.
+This is the single criterion that determines the ceiling, and the one most easily
+mis-scored, because "native speech-to-speech" and "full-duplex" are routinely
+used as synonyms. They are not. There are **three generations**, not two:
 
-This is the single decision that determines the ceiling. Everything else is
-execution.
+| Generation | Shape | Turn detection | Examples |
+|---|---|---|---|
+| 1. Cascade | STT → chat → TTS | in your code, on silence | voxtral-live, original ChatGPT Voice |
+| 2. Turn-based native | one model, audio in and out | provider-side, still on silence | **Gemini Live**, ChatGPT Advanced Voice Mode |
+| 3. Full-duplex | one model, continuous both ways | none — the model decides, many times a second | GPT‑Live‑1, Moshi, PersonaPlex |
+
+Generation 2 is a real advance over generation 1: no information is lost to text,
+and latency drops. But the turn boundary has been *moved*, not removed. The model
+still waits for you to stop before it starts, because it was trained on turns.
+Scoring generation 2 as "no turn detector" because the timer is not in your
+source tree is the mistake this table exists to prevent — criterion 3 asks
+whether a turn boundary is imposed anywhere, not whether you wrote it.
+
+The distinguishing test for generation 3 is the **backchannel**: can the model
+say "mhm" *while you are still talking*, without that ending your turn? A
+generation-2 model cannot, because emitting anything means the turn changed
+hands. There is no application-layer trick that adds this.
+
+A consequence worth stating plainly: **generation 3 is not something you can
+build.** It is a property of model weights. You obtain it by renting an API or
+downloading weights, and until then every other criterion is work you do to be
+ready for it — not work that substitutes for it. See
+[The model problem](the-model-problem.md) for what is actually obtainable today,
+and at what price.
 
 ### 5. Interruptibility that reaches the whole system
 
