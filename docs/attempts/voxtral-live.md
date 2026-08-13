@@ -100,8 +100,10 @@ work discarded by id.** Verified end to end: `daemon.mjs:79` passes
 
 The assistant says "let me look that up" *now* and delivers *later*, and if the
 user has moved on by then, the answer is dropped rather than spoken into a
-different conversation. That is the correct shape, and it is the shape Assistant
-mark I's realtime session cannot express at all.
+different conversation. That remains the richer asynchronous delegation shape;
+Mark I now has a bounded realtime Tool System bridge for safe synchronous tool
+calls, while this attempt still demonstrates the useful dispatch-now,
+supersede-later pattern.
 
 *Operational note:* if web search appears broken, suspect a missing
 `VOXTRAL_SEARCH_ENDPOINT` environment variable before suspecting the code.

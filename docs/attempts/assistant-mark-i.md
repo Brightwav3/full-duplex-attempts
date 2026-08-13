@@ -1,7 +1,9 @@
 # Assistant mark I
 
-> **Read as of:** 2026-08-13, against the working tree at `C:\Users\Sajmon\Jarvis`
-> (superproject `main`, 11 submodules).
+> **Read as of:** 2026-08-13, against superproject commit
+> [`63105a2`](https://github.com/Brightwav3/Assistant-mark-I/commit/63105a2)
+> in [Brightwav3/Assistant-mark-I](https://github.com/Brightwav3/Assistant-mark-I)
+> (branch `codex/realtime-tools-audio-boundary`, 11 submodules).
 > **Repository:** [github.com/Brightwav3](https://github.com/Brightwav3) — a
 > superproject; each core is an independent repository.
 > **Working name:** "Jarvis" appears in the prose and never in the code; every
@@ -40,10 +42,10 @@ cover the session lifecycle without touching a network.
 | Criterion | Status |
 |---|---|
 | 1. Simultaneous I/O | **Yes, structurally.** The Gemini Live session is inherently bidirectional. |
-| 2. Echo cancellation | **None, and nowhere to put it.** See wall 2. |
-| 3. No blocking turn detector | **No — outsourced, not removed.** See wall 3. |
+| 2. Echo cancellation | **None, and nowhere to put it.** See Wall 1. |
+| 3. No blocking turn detector | **No — outsourced, not removed.** See Wall 2. |
 | 4. Full-duplex model | **No. Generation 2.** Gemini Live is native speech-to-speech and still turn-based. |
-| 5. Interruptibility | **Partial.** `interrupt()` and `output.interrupted` exist on the contract; there is no delegated work to cancel, because there is no delegation. |
+| 5. Interruptibility | **Partial but useful.** `interrupt()` and `output.interrupted` stop stale playback; realtime tool execution propagates cancellation and drops late results. It is not generation-3 conversational overlap. |
 
 > **Correction, 2026-08-13.** An earlier version of this page scored criteria 3
 > and 4 as passes, on the reasoning that turn detection is the provider's problem
@@ -53,34 +55,33 @@ cover the session lifecycle without touching a network.
 > the turn on silence — server-side, but no less imposed. The attempt's real
 > achievement is the contract, not the duplexity.
 
-## The three walls
+## The remaining walls
 
-### Wall 1 — tools are unreachable from the path that runs on hardware
+### Resolved engineering gap — tools now reach the path that runs on hardware
 
-`speech-system/realtime core/src/contracts.ts` is the whole story in two lines:
+The previous version of this page called tool access unreachable. Mark I now
+closes that gap with a provider-neutral boundary:
 
 ```ts
 export interface RealtimeSessionConfig {
   provider: string; inputFormat: AudioFormat; model?: string;
-  systemInstruction?: string; apiKey?: string;
+  systemInstruction?: string; apiKey?: string; tools?: RealtimeToolDeclaration[];
 }
 ```
 
-No `tools` field. And `RealtimeSpeechEvent` — eleven variants covering session
-lifecycle, input speech start/end, partial and final transcripts for both
-directions, output audio start/chunk/complete, and interruption — has **no
-tool-call variant**.
+`RealtimeSpeechEvent` now has `tool.requested`, and
+`RealtimeSpeechSession.sendToolResult()` completes the return path. The
+`assistant-runtime/src/tool-bridge.ts` adapter translates Tool System
+declarations and outcomes without duplicating validation or policy. The normal
+composition exposes four safe read-only tools — `calculate`, `get_time`,
+`system_status`, and `uptime` — and the 2026-08-13 hardware run confirmed real
+calls for time, system status, and multi-step calculation.
 
-The consequence: the entire Tool System and the Host Tools catalogue are
-unreachable from the realtime session. Not "not yet integrated" — not
-expressible. The assistant can converse and cannot act.
+Side-effecting capabilities such as `open_app` are still deliberately explicit:
+they require an injected executor, an allowlist policy, and a broker. That is a
+permission boundary, not a missing integration.
 
-The return path is already half built. `RealtimeSpeechSession` declares
-`sendText(text: string)`, and `gemini.ts:30` implements it as
-`this.#client.sendRealtimeInput({ text })` — so a tool result has a way back
-into the conversation the moment there is a way for a tool call to come out.
-
-### Wall 2 — echo cancellation has no home
+### Wall 1 — echo cancellation has no home
 
 Capture (Scribe Core) and playback (Realtime Core) are **separate repositories
 with zero imports between them, by design**. Module independence is the project's
@@ -92,7 +93,7 @@ of conversational flow", which is vague enough to justify anything, but a
 concrete signal-processing requirement that the current decomposition makes
 unimplementable.
 
-### Wall 3 — the ceiling is the model, and the model is generation 2
+### Wall 2 — the ceiling is the model, and the model is generation 2
 
 The frustration this attempt produced was that it did not feel like GPT‑Live,
 despite the architecture being right. The cause is not in the repository. Gemini
@@ -107,20 +108,24 @@ like a personal failure and is not. See
 price, and why it is still thin.
 
 The corollary is unflattering in a different way. Because the ceiling is
-external, the walls that *are* internal — no tool path, nowhere for AEC — are the
-whole of what this attempt controls, and both remain open.
+external, the remaining internal wall is AEC placement; tool access is now part
+of the verified Mark I boundary rather than an open gap.
 
 ## What this attempt proves
 
 That the hard half — a native speech-to-speech session behind a
-provider-independent contract, with a fake that makes it testable — is buildable
-and was built. It is generation-2 infrastructure built well enough that
-generation 3 should drop into it as a provider rather than a rewrite; whether
-that is true is untested, and stays untested until a second provider ships.
+provider-independent contract, with a fake that makes it testable, plus a
+provider-neutral Tool System bridge and safe hardware-verified capabilities — is
+buildable and was built. It is generation-2 infrastructure built well enough
+that generation 3 should drop into it as a provider rather than a rewrite;
+whether that is true is untested, and stays untested until a second provider
+ships.
 
-What it did not prove is that a duplex conversation is useful without the ability
-to act, or that module independence survives contact with acoustics.
+What it did not prove is that module independence survives contact with
+acoustics, or that a generation-3 model will preserve the same contracts under
+continuous overlap.
 
-The pattern for the missing half does not need inventing. See
-[voxtral-live](voxtral-live.md), whose `delegation.mjs` and `cancellation.mjs`
-are a working reference for dispatch-not-await with cancellation on supersede.
+The pattern for the remaining application-side improvements does not need
+inventing. See [voxtral-live](voxtral-live.md), whose `delegation.mjs`,
+`cancellation.mjs`, and echo-suppression path are working references for the
+parts Mark I does not yet own.

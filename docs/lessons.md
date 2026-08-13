@@ -109,17 +109,18 @@ Two consequences for anyone building this:
   pleasant conversationalist that cannot do anything. That is a worse assistant
   than a generation-2 model that can.
 
-*From: OpenAI's published GPT‑Live evaluations, read 2026-08-13. Cross-check
-against [voxtral-live](attempts/voxtral-live.md), which built the delegation half
-and is structurally further from full-duplex — and still more useful for it.*
+*From: OpenAI's published GPT‑Live evaluations, read 2026-08-13. Mark I now
+provides the bounded Tool System half for safe realtime capabilities; cross-
+check against [voxtral-live](attempts/voxtral-live.md), which explores richer
+delegation and cancellation in a cascade.*
 
-## 8. Split the problem the same way twice and you get two halves, not two systems
+## 8. Different attempts solve different internal walls
 
-The clearest thing to come out of reading both repositories on the same day: they
-are complementary halves of one architecture. Assistant mark I has the media half
-and cannot act; voxtral-live has the application half and cannot stop taking
-turns.
+The clearest thing to come out of reading both repositories on the same day is
+that the projects are complementary without being literal halves. Assistant
+Mark I has native speech-to-speech media, provider-neutral contracts, and a
+bounded safe Tool System bridge. Voxtral-live has cascade-side asynchronous
+delegation, cancellation, and echo-suppression work.
 
-Neither is a failure. But the effort spent building each half in isolation is
-effort spent not integrating them, and the integration is where full-duplex
-actually lives.
+Neither is a failure. The next useful architecture would combine those proven
+boundaries around a model that can actually sustain generation-3 overlap.

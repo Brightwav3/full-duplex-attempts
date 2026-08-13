@@ -13,13 +13,13 @@ wall, and what the wall was made of.
 
 | | [Assistant mark I](docs/attempts/assistant-mark-i.md) | [voxtral-live](docs/attempts/voxtral-live.md) |
 |---|---|---|
-| Repository | [Brightwav3/Jarvis](https://github.com/Brightwav3) (superproject, 11 submodules) | [Brightwav3/voxtral-live](https://github.com/Brightwav3/voxtral-live) |
+| Repository | [Brightwav3/Assistant-mark-I](https://github.com/Brightwav3/Assistant-mark-I) (superproject, 11 submodules) | [Brightwav3/voxtral-live](https://github.com/Brightwav3/voxtral-live) |
 | Language | TypeScript | JavaScript (ESM) |
 | Architecture | Native speech-to-speech (Gemini Live) | Cascade: STT → chat → TTS (Mistral) |
 | Generation | **2** — one model, still turn-based | **1** — three models in series |
 | Turn detection | Provider-side, still on silence | 550 ms silence timer, in-process |
-| Half solved | **Media** — audio genuinely flows in and out of one model | **Application** — delegation, cancellation, barge-in plumbing |
-| Missing | Tool delegation from the realtime path; echo cancellation | The middle: the cascade caps how duplex it can ever be |
+| Half solved | **Media + bounded capability execution** — audio genuinely flows in and out of one model, and safe tools reach the platform | **Application** — delegation, cancellation, barge-in plumbing, and echo suppression |
+| Missing | Echo cancellation and a generation-3 model; side-effecting tools are deliberately opt-in | The middle: the cascade caps how duplex it can ever be |
 | Duplex rating | Capped by the model, ready for a better one | Capped by the architecture |
 
 Neither attempt is generation 3, and neither could have been:
@@ -27,10 +27,11 @@ Neither attempt is generation 3, and neither could have been:
 That is the ceiling both hit, and it is worth separating from the walls each one
 built for itself.
 
-The one-line version: **the two projects are complementary halves of the same
-architecture.** Neither is a failed attempt; each is the other's reference
-implementation for the half it lacks. That relationship is the main thing this
-repository exists to record.
+The one-line version: **the two projects solve different internal walls around
+the same problem.** Mark I has the native realtime media path and a provider-
+neutral Tool System bridge; voxtral-live has the richer cascade-side delegation,
+cancellation, and echo work. Neither is generation 3, and neither is a failed
+attempt.
 
 ## Read in this order
 
@@ -41,8 +42,10 @@ repository exists to record.
    exist, what they cost, and why the list is still this short. Criterion 4 is
    the only one you cannot build your way past, so it is worth knowing how tall
    that wall is before reading how each attempt hit it.
-3. [Assistant mark I](docs/attempts/assistant-mark-i.md) — the media half.
-4. [voxtral-live](docs/attempts/voxtral-live.md) — the application half.
+3. [Assistant mark I](docs/attempts/assistant-mark-i.md) — native media plus a
+   bounded safe tool path.
+4. [voxtral-live](docs/attempts/voxtral-live.md) — cascade-side delegation,
+   cancellation, and echo work.
 5. [What I learned](docs/lessons.md) — the findings that outlived the code.
 6. [Glossary](docs/glossary.md) — barge-in, AEC, cascade, turn-taking, and the
    rest, defined once so the attempt pages can be terse.
