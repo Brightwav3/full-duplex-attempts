@@ -116,11 +116,15 @@ delegation and cancellation in a cascade.*
 
 ## 8. Different attempts solve different internal walls
 
-The clearest thing to come out of reading both repositories on the same day is
-that the projects are complementary without being literal halves. Assistant
-Mark I has native speech-to-speech media, provider-neutral contracts, and a
-bounded safe Tool System bridge. Voxtral-live has cascade-side asynchronous
-delegation, cancellation, and echo-suppression work.
+The clearest thing to come out of reading these repositories together is that
+the projects are complementary without being literal halves. Assistant Mark I
+has native speech-to-speech media, provider-neutral contracts, and a bounded
+safe Tool System bridge. Mark II adds the missing capable-brain path: immediate
+acknowledgement, background reasoning, bounded memory tools, structured
+evidence, and same-session delivery. Voxtral-live has cascade-side
+asynchronous delegation, cancellation, and echo-suppression work.
 
-Neither is a failure. The next useful architecture would combine those proven
+None is a failure. The next useful architecture combines those proven
 boundaries around a model that can actually sustain generation-3 overlap.
+Delegation is not a substitute for that model; it is how a small conversational
+model becomes a useful assistant while the model ceiling remains out of reach.
