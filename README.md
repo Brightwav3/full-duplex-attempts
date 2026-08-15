@@ -33,7 +33,7 @@ neutral Tool System bridge; Mark II adds a verified delegated intelligence path
 to that native session; voxtral-live has the richer cascade-side cancellation
 and echo work. None is generation 3, and none is a failed attempt.
 
-## Read in this order
+## Read in this order — generation 1 → generation 2
 
 1. [What full-duplex actually requires](docs/what-full-duplex-requires.md) — the
    five criteria every attempt below is judged against, and why "just remove the

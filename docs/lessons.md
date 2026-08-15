@@ -46,8 +46,8 @@ Everything else is execution. voxtral-live executed the application layer better
 than Assistant mark I and is still structurally further from full-duplex, because
 a cascade needs a complete utterance and therefore needs a turn detector.
 
-But the sharper version of this lesson took longer to arrive, because both
-attempts assumed the choice was cascade versus native. It is not — it is
+But the sharper version of this lesson took longer to arrive, because the
+attempts initially assumed the choice was cascade versus native. It is not — it is
 [three generations](what-full-duplex-requires.md), and *native speech-to-speech
 is only the second*. Gemini Live is native and still ends the turn on silence.
 Moving from generation 1 to 2 is a real gain and does not reach duplex; the last
@@ -62,7 +62,7 @@ Two corollaries, one per generation you might be stuck on:
   on being able to absorb generation 3 without a rewrite, and on the walls that
   *are* internal. See [The model problem](the-model-problem.md).
 
-*From: both attempts, and a correction to this page dated 2026-08-13.*
+*From: all three attempts, and a correction to this page dated 2026-08-13.*
 
 ## 5. Cancellation needs a monotonic id, and it is cheap to add early
 
@@ -73,10 +73,13 @@ moved on. Without it, cancellation is best-effort and late results speak into th
 wrong conversation.
 
 voxtral-live's `src/conversation/cancellation.mjs` and `delegation.mjs` are the
-reference implementation. They were not hard to write; they were hard to know to
-write.
+first reference implementation. Mark II confirms the same principle at a larger
+boundary: its `executionId` and Delegation Broker let the runtime cancel or
+discard background work without confusing it with the next conversation turn.
+The code was not hard to write; it was hard to know to write.
 
-*From: [voxtral-live](attempts/voxtral-live.md).*
+*From: [voxtral-live](attempts/voxtral-live.md) and
+[Assistant mark II](attempts/assistant-mark-ii.md).*
 
 ## 6. Provider-independence pays for itself in testability before it pays for itself in portability
 
@@ -100,6 +103,8 @@ OpenAI published the numbers, and the gap is not subtle. On BrowseComp — agent
 web search — Advanced Voice Mode scores **0.7 %** and GPT‑Live‑1 with high
 reasoning effort scores **75.2 %**. GPT‑Live‑1 is a small, fast conversational
 model. The 75 points are not in it; they are in what it is allowed to call.
+The public GPT-Live architecture makes that delegation explicit: the live voice
+path stays responsive while a frontier model reasons and uses tools asynchronously.
 
 Two consequences for anyone building this:
 
@@ -109,9 +114,9 @@ Two consequences for anyone building this:
   pleasant conversationalist that cannot do anything. That is a worse assistant
   than a generation-2 model that can.
 
-*From: OpenAI's published GPT‑Live evaluations, read 2026-08-13. Mark I now
+*From: [OpenAI's published GPT-Live engineering description](https://openai.com/index/continuous-voice-interaction-with-gpt-live/),
+read 2026-08-15. Mark I now
 provides the bounded Tool System half for safe realtime capabilities; cross-
-check against [voxtral-live](attempts/voxtral-live.md), which explores richer
 delegation and cancellation in a cascade.*
 
 ## 8. Different attempts solve different internal walls
@@ -128,3 +133,21 @@ None is a failure. The next useful architecture combines those proven
 boundaries around a model that can actually sustain generation-3 overlap.
 Delegation is not a substitute for that model; it is how a small conversational
 model becomes a useful assistant while the model ceiling remains out of reach.
+
+## 9. Runtime-managed asynchrony can reproduce a missing provider capability
+
+The most important Mark II result is not simply that it used a second model. It
+is that the runtime created an asynchronous delegation capability around a
+provider that did not expose that capability directly. `intelligence_delegate`
+returns immediately with an `executionId`; the Delegation Broker owns the
+background model call, Tool System owns the downstream tools, and the Delivery
+Scheduler returns a validated result to the same session later.
+
+That is different from claiming that Gemini Live natively supports the same
+async tool primitive as GPT-Live. The provider model and the orchestration layer
+are separate boundaries. When the provider does not supply the higher-level
+primitive, the runtime can still build it — if it owns correlation, cancellation,
+deadlines, structured results, and delivery policy explicitly.
+
+*From: [Assistant mark II](attempts/assistant-mark-ii.md), cross-checked against
+[OpenAI's GPT-Live architecture description](https://openai.com/index/continuous-voice-interaction-with-gpt-live/).*

@@ -34,6 +34,30 @@ call) to a separate, stronger model, and continuing to converse while it runs.
 The source of most of a voice assistant's measurable capability; see
 [lesson 7](lessons.md).
 
+**Runtime-managed asynchrony** — background work that looks asynchronous to the
+conversation because the runtime accepts it immediately, gives it an execution
+identity, and delivers its result later. It does not require the provider voice
+model to expose a native asynchronous tool primitive. Mark II builds this around
+`intelligence_delegate`.
+
+**Delegation Broker** — the runtime component that owns the lifecycle of a
+delegated execution: acceptance, start, progress, completion, failure,
+cancellation, deadlines, and correlation. The voice model requests work; the
+broker decides how that work runs.
+
+**Execution ID** — the correlation identifier for one accepted background
+execution. It connects the request, model calls, downstream tool calls,
+cancellation, result validation, and delivery without turning the result into a
+new user message.
+
+**Delegation result** — structured evidence returned by background reasoning,
+not a final spoken sentence. Mark II uses `delegation.result.v1`, which carries
+validated data and references for the active voice model to formulate naturally.
+
+**Same-session delivery** — returning a delegated result to the realtime session
+that requested it, with an explicit delegation source rather than as a user
+transcript. Delivery can interrupt, wait until idle, or remain silent.
+
 **Native speech-to-speech** — one model consuming streaming audio and emitting
 streaming audio, with no intermediate text. Necessary for full-duplex and not
 sufficient: Gemini Live and ChatGPT Advanced Voice Mode are native and still
